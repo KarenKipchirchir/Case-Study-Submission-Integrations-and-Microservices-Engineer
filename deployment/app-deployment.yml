@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: country-integration-service
+  labels:
+    app: country-integration-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: country-integration-service
+  template:
+    metadata:
+      labels:
+        app: country-integration-service
+    spec:
+      containers:
+        - name: country-integration-service
+          image: country-integration-service:v1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATAFLEX_BASEURL
+              valueFrom:
+                configMapKeyRef:
+                  name: country-integration-service-config
+                  key: DATAFLEX_BASEURL
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: country-integration-service-config
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: country-integration-service-secret
+                  key: MYSQL_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: country-integration-service-secret
+                  key: MYSQL_PASSWORD
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              valueFrom:
+                configMapKeyRef:
+                  name: country-integration-service-config
+                  key: SPRING_JPA_HIBERNATE_DDL_AUTO
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
