@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: country-integration-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/country_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: ${SPRING_JPA_FORMAT_SQL:true}
+        dialect: org.hibernate.dialect.MySQLDialect
+
+dataflex:
+  baseURL: ${DATAFLEX_BASEURL:http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso}
+
+resilience4j:
+  retry:
+    instances:
+      dataflexClientRetry:
+        maxAttempts: ${RESILIENCE4J_RETRY_MAX_ATTEMPTS:3}
+        waitDuration: ${RESILIENCE4J_RETRY_WAIT_DURATION:2s}
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.RestClientException
